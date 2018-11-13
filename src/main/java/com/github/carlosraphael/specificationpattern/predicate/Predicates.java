@@ -17,7 +17,7 @@ public final class Predicates {
 
     private Predicates() {}
 
-    public static Predicate asPredicate(Set<Specification> specifications) {
+    public static Predicate<FxTransaction> asPredicate(Set<Specification> specifications) {
         Objects.requireNonNull(specifications);
         return specifications.stream()
                 .map(Specification::flattened)
