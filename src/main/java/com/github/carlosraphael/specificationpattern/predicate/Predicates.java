@@ -1,5 +1,6 @@
 package com.github.carlosraphael.specificationpattern.predicate;
 
+import com.github.carlosraphael.specificationpattern.FxTransaction;
 import com.github.carlosraphael.specificationpattern.entity.fieldspecification.FieldSpecification;
 import com.github.carlosraphael.specificationpattern.entity.Specification;
 import com.github.carlosraphael.specificationpattern.entity.SpecificationType;
