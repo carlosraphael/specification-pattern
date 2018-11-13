@@ -69,9 +69,9 @@ public class DataMatchingTest {
                 sourceAmountFieldMapping(), FieldOperator.GREATER_THAN, amountOfFiveHundred(), SpecificationOperator.OR);
 
         // when
-        Predicate basedOnCreatedCriteria = Predicates.asPredicate(ImmutableSet.of(eurSourceCurrencySpecification, sourceAmountSpecification));
-        List<FxTransaction> selectedFxTransaction = (List<FxTransaction>)
-                streamOfFxTransactions.filter(basedOnCreatedCriteria).collect(Collectors.toList());
+        Predicate<FxTransaction> basedOnCreatedCriteria =
+                Predicates.asPredicate(ImmutableSet.of(eurSourceCurrencySpecification, sourceAmountSpecification));
+        List<FxTransaction> selectedFxTransaction = streamOfFxTransactions.filter(basedOnCreatedCriteria).collect(Collectors.toList());
 
         // then
         assertThat(selectedFxTransaction, hasSize(2));
@@ -96,9 +96,9 @@ public class DataMatchingTest {
                 sourceAmountFieldMapping(), FieldOperator.BETWEEN, amountOfFiveHundredMinAndOneThousandMax(), SpecificationOperator.AND);
 
         // when
-        Predicate basedOnCreatedCriteria = Predicates.asPredicate(ImmutableSet.of(eurSourceCurrencySpecification, sourceAmountSpecification));
-        List<FxTransaction> selectedFxTransaction = (List<FxTransaction>)
-                streamOfFxTransactions.filter(basedOnCreatedCriteria).collect(Collectors.toList());
+        Predicate<FxTransaction> basedOnCreatedCriteria =
+                Predicates.asPredicate(ImmutableSet.of(eurSourceCurrencySpecification, sourceAmountSpecification));
+        List<FxTransaction> selectedFxTransaction = streamOfFxTransactions.filter(basedOnCreatedCriteria).collect(Collectors.toList());
 
         // then
         assertThat(selectedFxTransaction, hasSize(1));
@@ -123,9 +123,9 @@ public class DataMatchingTest {
                 sourceCurrencyFieldMapping(), FieldOperator.EQUALS, usdCurrency(), SpecificationOperator.OR);
 
         // when
-        Predicate basedOnCreatedCriteria = Predicates.asPredicate(ImmutableSet.of(eurSourceCurrencySpecification, usdSourceCurrencySpecification));
-        List<FxTransaction> selectedFxTransaction = (List<FxTransaction>)
-                streamOfFxTransactions.filter(basedOnCreatedCriteria).collect(Collectors.toList());
+        Predicate<FxTransaction> basedOnCreatedCriteria =
+                Predicates.asPredicate(ImmutableSet.of(eurSourceCurrencySpecification, usdSourceCurrencySpecification));
+        List<FxTransaction> selectedFxTransaction = streamOfFxTransactions.filter(basedOnCreatedCriteria).collect(Collectors.toList());
 
         // then
         assertThat(selectedFxTransaction, hasSize(2));
