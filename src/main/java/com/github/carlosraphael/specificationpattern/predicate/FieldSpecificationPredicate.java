@@ -13,12 +13,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
-import static com.github.carlosraphael.specificationpattern.util.PojoReaderUtil.getFieldValue;
+import static com.github.carlosraphael.specificationpattern.util.JavaBeanUtil.getFieldValue;
 
 /**
  * @author carlos.raphael.lopes@gmail.com
  */
 @Slf4j
+@SuppressWarnings("unchecked")
 class FieldSpecificationPredicate extends SpecificationPredicate<FieldSpecification> {
 
     FieldSpecificationPredicate(FieldSpecification specification,
@@ -34,14 +35,14 @@ class FieldSpecificationPredicate extends SpecificationPredicate<FieldSpecificat
             FieldContent<Currency> expectedContent = specification.getExpectedContent();
             return testCurrency(
                     specification.getFieldOperator(),
-                    getFieldValue(fieldMapping.getName(), fxTransaction),
+                    getFieldValue(fxTransaction, fieldMapping.getName()),
                     expectedContent.getValue());
         }
 
         FieldContent<Comparable> expectedContent = specification.getExpectedContent();
         return test(
                 specification.getFieldOperator(),
-                getFieldValue(fieldMapping.getName(), fxTransaction),
+                getFieldValue(fxTransaction, fieldMapping.getName()),
                 expectedContent.getValue(),
                 Optional.ofNullable(expectedContent.getAnotherValue())
         );

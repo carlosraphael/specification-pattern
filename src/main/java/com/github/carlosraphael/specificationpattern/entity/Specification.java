@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  * @author carlos.raphael.lopes@gmail.com
  */
 @Entity @Getter @Setter
-@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Specification extends BaseEntity {
 
     @NotNull
