@@ -32,47 +32,49 @@ public final class JavaBeanUtil {
 
     private JavaBeanUtil() {}
 
-    public static <T> T getFieldValue(Object object, String fieldName) {
-        return (T) getCachedFunction(object.getClass(), fieldName).apply(object);
+    public static <T> T getFieldValue(Object javaBean, String fieldName) {
+        return (T) getCachedFunction(javaBean.getClass(), fieldName).apply(javaBean);
     }
 
-    private static Function getCachedFunction(Class<?> objectClass, String fieldName) {
-        final Function function = CACHE.get(objectClass).get(fieldName);
-        if (function == null) {
-            return createAndCacheFunction(objectClass, fieldName);
+    private static Function getCachedFunction(Class<?> javaBeanClass, String fieldName) {
+        final Function function = CACHE.get(javaBeanClass).get(fieldName);
+        if (match(function)) {
+            return function;
         }
-        return function;
+        return createAndCacheFunction(javaBeanClass, fieldName);
     }
 
-    private static Function createAndCacheFunction(Class<?> objectClass, String path) {
-        return cacheAndGetFunction(path, objectClass,
-                createFunction(objectClass, path)
+    private static boolean match(Function function) {
+        return function != null;
+    }
+
+    private static Function createAndCacheFunction(Class<?> javaBeanClass, String path) {
+        return cacheAndGetFunction(path, javaBeanClass,
+                createFunction(javaBeanClass, path)
                         .stream()
                         .reduce(Function::andThen)
                         .orElseThrow(IllegalStateException::new)
         );
     }
 
-    private static Function cacheAndGetFunction(String path, Class<?> objectClass, Function functionToBeCached) {
-        Function cachedFunction = CACHE.get(objectClass).putIfAbsent(path, functionToBeCached);
+    private static Function cacheAndGetFunction(String path, Class<?> javaBeanClass, Function functionToBeCached) {
+        Function cachedFunction = CACHE.get(javaBeanClass).putIfAbsent(path, functionToBeCached);
         return cachedFunction != null ? cachedFunction : functionToBeCached;
     }
 
-    private static List<Function> createFunction(Class<?> objectClass, String path) {
-        String[] fieldNames = FIELD_SEPARATOR.split(path);
-        Class nestedClass = null;
+    private static List<Function> createFunction(Class<?> javaBeanClass, String path) {
         List<Function> functions = new ArrayList<>();
-        for (String fieldName : fieldNames) {
-            Tuple2<? extends Class, Function> getFunction =
-                    createGetFunction(fieldName, nestedClass != null ? nestedClass : objectClass);
-            nestedClass = getFunction._1;
-            functions.add(getFunction._2);
-        }
+        Stream.of(FIELD_SEPARATOR.split(path))
+                .reduce(javaBeanClass, (nestedJavaBeanClass, fieldName) -> {
+                    Tuple2<? extends Class, Function> getFunction = createGetFunction(fieldName, nestedJavaBeanClass);
+                    functions.add(getFunction._2);
+                    return getFunction._1;
+                }, (previousClass, nextClass) -> nextClass);
         return functions;
     }
 
-    private static Tuple2<? extends Class, Function> createGetFunction(String fieldName, Class objectClass) {
-        return Stream.of(objectClass.getDeclaredMethods())
+    private static Tuple2<? extends Class, Function> createGetFunction(String fieldName, Class<?> javaBeanClass) {
+        return Stream.of(javaBeanClass.getDeclaredMethods())
                 .filter(JavaBeanUtil::isGetterMethod)
                 .filter(method -> StringUtils.endsWithIgnoreCase(method.getName(), fieldName))
                 .map(JavaBeanUtil::createTupleContainingReturnTypeAndGetter)
