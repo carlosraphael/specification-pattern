@@ -89,21 +89,21 @@ public final class JavaBeanUtil {
                 !method.getName().endsWith("Class");
     }
 
-    private static Tuple2<? extends Class, Function> createTupleContainingReturnTypeAndGetter(Method method) {
+    private static Tuple2<? extends Class, Function> createTupleContainingReturnTypeAndGetter(Method getterMethod) {
         try {
             return Tuple.of(
-                    method.getReturnType(),
-                    (Function) createGetterCallSite(LOOKUP.unreflect(method)).getTarget().invokeExact()
+                    getterMethod.getReturnType(),
+                    (Function) createCallSite(LOOKUP.unreflect(getterMethod)).getTarget().invokeExact()
             );
         } catch (Throwable e) {
-            throw new IllegalArgumentException("Lambda creation failed for method (" + method.getName() + ").", e);
+            throw new IllegalArgumentException("Lambda creation failed for getterMethod (" + getterMethod.getName() + ").", e);
         }
     }
 
-    private static CallSite createGetterCallSite(MethodHandle handle) throws LambdaConversionException {
+    private static CallSite createCallSite(MethodHandle getterMethodHandle) throws LambdaConversionException {
         return LambdaMetafactory.metafactory(LOOKUP, "apply",
                 MethodType.methodType(Function.class),
                 MethodType.methodType(Object.class, Object.class),
-                handle, handle.type());
+                getterMethodHandle, getterMethodHandle.type());
     }
 }
