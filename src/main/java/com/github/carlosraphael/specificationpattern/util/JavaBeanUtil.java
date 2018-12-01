@@ -38,14 +38,10 @@ public final class JavaBeanUtil {
 
     private static Function getCachedFunction(Class<?> javaBeanClass, String fieldName) {
         final Function function = CACHE.get(javaBeanClass).get(fieldName);
-        if (match(function)) {
+        if (function != null) {
             return function;
         }
         return createAndCacheFunction(javaBeanClass, fieldName);
-    }
-
-    private static boolean match(Function function) {
-        return function != null;
     }
 
     private static Function createAndCacheFunction(Class<?> javaBeanClass, String path) {
