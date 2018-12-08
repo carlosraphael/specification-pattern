@@ -16,10 +16,22 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
+ * This class is meant to demonstrate a quite fast alternative to Java Reflection when reading values from a given
+ * Java Bean object.
+ *
+ * It is built on top of {@link LambdaMetafactory} and {@link MethodHandle} in order to create a {@link CallSite}
+ * so that "invokedynamic" bytecode instruction is generated to get most out of the JVM . Also, for optimal performance
+ * it caches the dynamically created getters into a {@link ClassValue}.
+ *
+ * Benchmark shows this technique can by far outperform the well-known Apache BeanUtils library and one of its alternatives
+ * called Jodd BeanUtil.
+ *
+ * NOTE: this class does not support array and collection/map fields.
+ *
  * @author carlos.raphael.lopes@gmail.com
  */
 @SuppressWarnings("unchecked")
-public final class JavaBeanUtil {
+public class JavaBeanUtil {
 
     private static final Pattern FIELD_SEPARATOR = Pattern.compile("\\.");
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
@@ -46,7 +58,7 @@ public final class JavaBeanUtil {
 
     private static Function createAndCacheFunction(Class<?> javaBeanClass, String path) {
         return cacheAndGetFunction(path, javaBeanClass,
-                createFunction(javaBeanClass, path)
+                createFunctions(javaBeanClass, path)
                         .stream()
                         .reduce(Function::andThen)
                         .orElseThrow(IllegalStateException::new)
@@ -58,18 +70,18 @@ public final class JavaBeanUtil {
         return cachedFunction != null ? cachedFunction : functionToBeCached;
     }
 
-    private static List<Function> createFunction(Class<?> javaBeanClass, String path) {
+    private static List<Function> createFunctions(Class<?> javaBeanClass, String path) {
         List<Function> functions = new ArrayList<>();
         Stream.of(FIELD_SEPARATOR.split(path))
                 .reduce(javaBeanClass, (nestedJavaBeanClass, fieldName) -> {
-                    Tuple2<? extends Class, Function> getFunction = createGetFunction(fieldName, nestedJavaBeanClass);
+                    Tuple2<? extends Class, Function> getFunction = createFunction(fieldName, nestedJavaBeanClass);
                     functions.add(getFunction._2);
                     return getFunction._1;
                 }, (previousClass, nextClass) -> nextClass);
         return functions;
     }
 
-    private static Tuple2<? extends Class, Function> createGetFunction(String fieldName, Class<?> javaBeanClass) {
+    private static Tuple2<? extends Class, Function> createFunction(String fieldName, Class<?> javaBeanClass) {
         return Stream.of(javaBeanClass.getDeclaredMethods())
                 .filter(JavaBeanUtil::isGetterMethod)
                 .filter(method -> StringUtils.endsWithIgnoreCase(method.getName(), fieldName))
