@@ -85,7 +85,7 @@ public class JavaBeanUtil {
         return Stream.of(javaBeanClass.getDeclaredMethods())
                 .filter(JavaBeanUtil::isGetterMethod)
                 .filter(method -> StringUtils.endsWithIgnoreCase(method.getName(), fieldName))
-                .map(JavaBeanUtil::createTupleContainingReturnTypeAndGetter)
+                .map(JavaBeanUtil::createTupleWithReturnTypeAndGetter)
                 .findFirst()
                 .orElseThrow(IllegalStateException::new);
     }
@@ -97,7 +97,7 @@ public class JavaBeanUtil {
                 !method.getName().endsWith("Class");
     }
 
-    private static Tuple2<? extends Class, Function> createTupleContainingReturnTypeAndGetter(Method getterMethod) {
+    private static Tuple2<? extends Class, Function> createTupleWithReturnTypeAndGetter(Method getterMethod) {
         try {
             return Tuple.of(
                     getterMethod.getReturnType(),
